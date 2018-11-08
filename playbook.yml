@@ -1,0 +1,73 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - role: geerlingguy.java
+
+- hosts: master
+  become: true
+  roles:
+    - role: manala.apt
+  vars:
+    manala_apt_preferences:
+    - influxdb@influxdata
+
+- name: collecd
+  become: true
+  hosts:
+    - all
+  roles:
+    - role: collectd
+  vars:
+    collectd_plugins: [network]
+    collectd_plugins_options:
+      network:
+      - Server "{{ groups.master.0 }}" "25826"
+
+- name: jmeter
+  become: true
+  hosts: all
+  roles:
+    - role: jmeter
+      tags: jmeter
+  vars:
+    jmeter_libraries:
+      - https://jdbc.postgresql.org/download/postgresql-42.2.5.jar
+
+- hosts: master
+  become: true
+  roles:
+    - role: manala.influxdb
+      tags: influxdb
+  vars:
+    manala_influxdb_databases:
+    - collectd
+    - jmeter
+    manala_influxdb_config:
+    - reporting-disabled: true
+    - collectd:
+      - enabled: true
+    - graphite:
+      - enabled: true
+
+- name: grafana
+  become: true
+  hosts: master
+  roles:
+    - role: cloudalchemy.grafana
+      tags: grafana
+  vars:
+    grafana_datasources:
+    - name: collectd
+      type: influxdb
+      access: server
+      url: 'http://{{ groups.master.0 }}:8086'
+      database: collectd
+    - name: jmeter
+      type: influxdb
+      access: server
+      url: 'http://{{ groups.master.0 }}:8086'
+      database: jmeter
+    grafana_security:
+     admin_password: admin
+     admin_user: admin

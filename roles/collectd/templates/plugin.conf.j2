@@ -1,0 +1,9 @@
+LoadPlugin {{ item }}
+
+{% if collectd_plugins_options.get(item) %}
+<Plugin {{ item }}>
+{% for line in collectd_plugins_options[item] %}
+	{{line}}
+{% endfor %}
+</Plugin>
+{% endif %}

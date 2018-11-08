@@ -1,0 +1,7 @@
+jmeter_source_location: "https://archive.apache.org/dist/jmeter/binaries"
+jmeter_home_parent_directory: /opt
+jmeter_home: "{{jmeter_home_parent_directory}}/apache-jmeter-{{ jmeter_version }}"
+owner_user: ""
+owner_group: ""
+jmeter_version: 5.0
+jmeter_libraries: []

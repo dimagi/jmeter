@@ -1,0 +1,33 @@
+---
+- name: Checking if jmeter is already installed
+  stat:
+    path: "{{ jmeter_home_parent_directory }}/apache-jmeter-{{ jmeter_version }}"
+  register: jmeter_installed
+
+- name: Unarchive jmeter
+  unarchive:
+    src: "{{ jmeter_source_location }}/apache-jmeter-{{ jmeter_version }}.tgz"
+    dest: "{{jmeter_home_parent_directory}}"
+    copy: no
+  when: jmeter_installed.stat.exists != True
+
+- name: Create Symlinks
+  file:
+    dest: '{{ item.dest }}'
+    src: '{{ item.src }}'
+    state: link
+  with_items:
+    - { src: '{{ jmeter_home }}/bin/jmeter', dest: '/usr/bin/jmeter' }
+    - { src: '{{ jmeter_home }}/bin/jmeter-server', dest: '/usr/bin/jmeter-server' }
+
+- name: Configure remote hosts
+  lineinfile:
+    path: "{{ jmeter_home }}/bin/jmeter.properties"
+    regexp: '^remote_hosts'
+    line: "remote_hosts={{ groups.clients | join(':1099,') }}:1099 }}"
+
+- name: Dowrinload libraries
+  get_url:
+    url: "{{ item }}"
+    dest: "{{ jmeter_home }}/lib"
+  loop: "{{ jmeter_libraries }}"

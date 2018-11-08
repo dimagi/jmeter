@@ -1,0 +1,17 @@
+---
+- name: install...
+  apt:
+    name:
+      - collectd
+      - collectd-utils
+    state: latest
+
+- name: apply configuration...
+  template: >-
+    src=plugin.conf.j2
+    dest=/etc/collectd/collectd.conf.d/{{item}}.conf
+    owner=root
+    group=root
+    mode=644
+  loop: "{{ collectd_plugins }}"
+  notify: restart collectd

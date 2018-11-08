@@ -1,0 +1,5 @@
+---
+- src: geerlingguy.java
+- src: manala.apt
+- src: manala.influxdb
+- src: cloudalchemy.grafana
